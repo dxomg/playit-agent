@@ -1,0 +1,33 @@
+name: Build ARMv7-musl Artifact
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build_linux_armv7_musl:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: linux armv7 musl
+            arch: armv7-unknown-linux-musleabihf
+            artifact: playit-linux-armv7
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build release (cross compile)
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --target ${{ matrix.platform.arch }} --release --all
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform.artifact }}
+          path: ./target/${{ matrix.platform.arch }}/release/playit-cli
